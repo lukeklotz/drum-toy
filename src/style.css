@@ -1,0 +1,88 @@
+#drum-toy{
+  font-family: monospace;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(32, 1fr) 60px; /* 8 buttons + knob */
+  gap: 3px;
+  padding: 5px;
+  align-items: center;
+}
+
+.dial-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.knob-container {
+  display: flex;
+  flex-direction: column;
+  align-items: space-between;
+  gap: 5px;
+}
+
+.knob {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.1),
+    2px 2px 5px rgba(0, 0, 0, 0.3);
+  position: relative;
+  cursor: grab;
+  user-select: none;
+}
+
+.knob:active {
+  cursor: grabbing;
+}
+
+.knob-indicator {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 2px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 1px;
+  transform-origin: center 10px;
+  transform: translateX(-50%) rotate(-135deg);
+  transition: transform 0.02s ease-out;
+}
+
+.knob-label {
+  font-size: 11px;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.knob-value {
+  font-size: 10px;
+  color: #aaa;
+  font-family: monospace;
+}
+
+.grid button {
+  padding: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background: #dfdfe6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.grid button:hover {
+  background: #535bf2;
+}
+
+.grid button:active {
+  transform: scale(0.95);
+}
