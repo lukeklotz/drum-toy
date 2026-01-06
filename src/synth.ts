@@ -1,7 +1,7 @@
 import * as Tone from 'tone';
 
 
-export class CustomFMSynth {
+export class FMSynth {
     private carrier: Tone.Oscillator;
     private modulator: Tone.Oscillator;
     private modulationIndex: Tone.Gain;
@@ -11,16 +11,9 @@ export class CustomFMSynth {
     protected isTriggered = false;
     
     constructor() {
-        // Modulator oscillator
-        this.modulator = new Tone.Oscillator(100, 'sine');
-        
-        // Modulation amount
-        this.modulationIndex = new Tone.Gain(100);
-        
-        // Carrier oscillator
-        this.carrier = new Tone.Oscillator(440, 'sine');
-        
-        // Amplitude envelope
+        this.modulator = new Tone.Oscillator(100, 'sine');    
+        this.modulationIndex = new Tone.Gain(100); 
+        this.carrier = new Tone.Oscillator(440, 'sine'); 
         this.envelope = new Tone.AmplitudeEnvelope({
             attack: 0.01,
             decay: 0.2,
@@ -28,11 +21,8 @@ export class CustomFMSynth {
             release: 0.1
         });
         
-        // Route: Modulator -> Gain -> Carrier frequency
         this.modulator.connect(this.modulationIndex);
-        this.modulationIndex.connect(this.carrier.frequency);
-        
-        // Carrier -> Envelope -> Destination
+        this.modulationIndex.connect(this.carrier.frequency); 
         this.carrier.connect(this.envelope);
         this.envelope.toDestination();
         
@@ -70,7 +60,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 export class Grid {
-    private synths: CustomFMSynth[] = [];
+    private synths: FMSynth[] = [];
     private numberOfColumns: number = 8;
     private buttons: HTMLButtonElement[] = [];
     private isOnStates: boolean[] = [];
@@ -79,7 +69,7 @@ export class Grid {
     constructor() {
         // Make sure this loop runs and creates synths
         for (let i = 0; i < this.numberOfColumns; i++) {
-            this.synths[i] = new CustomFMSynth(); // Use [i] = instead of push
+            this.synths[i] = new FMSynth(); // Use [i] = instead of push
             this.isOnStates[i] = false;
         }
         console.log('Synths created:', this.synths.length); // Debug line
@@ -88,7 +78,7 @@ export class Grid {
     //generate visual component of the grid and attach event listeners to buttons
     //also set the synth parameters based on the input values
     displayGrid(modAmt: number, freqAmt: number, modulatorAmt: number) {
-        const appDiv = document.getElementById("app") as HTMLDivElement;
+        const gridContainerDiv = document.getElementById("grid-container") as HTMLDivElement;
         const gridDiv = document.createElement("div");
         gridDiv.className = "grid";
 
@@ -100,10 +90,8 @@ export class Grid {
             this.buttons[i] = button;
             button.addEventListener("click", async () => {
                 this.isOnStates[i] = !this.isOnStates[i];
-                //display the button state
-                console.log(`Button ${i + 1} is now ${this.isOnStates[i] ? "ON" : "OFF"}`);
 
-                // Visual feedback
+                // Update button color based on state (on or off)
                 if (this.isOnStates[i]) {
                     button.style.backgroundColor = '#4ade80'; // Green when ON
                 } else {
@@ -132,7 +120,7 @@ export class Grid {
         dialContainer.appendChild(modulationAmountDial);
         gridDiv.appendChild(dialContainer);
 
-        appDiv.appendChild(gridDiv);
+        gridContainerDiv.appendChild(gridDiv);
     }
 
     // Create circular dial/knob
@@ -251,9 +239,9 @@ private createDial(labelText: string, initialValue: number, min: number, max: nu
             // Highlight current column
             this.buttons.forEach((btn, idx) => {
                 if (idx === i) {
-                    btn.style.border = '3px solid black';
+                    btn.style.border = '1px solid black';
                 } else {
-                    btn.style.border = '';
+                    btn.style.border= '1px solid transparent';
                 }
             });
             
