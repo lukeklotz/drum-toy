@@ -1,28 +1,27 @@
 import * as Tone from 'tone';
 
-
 export class FMSynth {
     private carrier: Tone.Oscillator;
-    private modulator: Tone.Oscillator;
-    private modulationIndex: Tone.Gain;
+    private modSpeed: Tone.Oscillator;
+    private modDepth: Tone.Gain;
     private envelope: Tone.AmplitudeEnvelope;
     private started: boolean = false;
     protected isOn = false;
     protected isTriggered = false;
     
     constructor() {
-        this.modulator = new Tone.Oscillator(100, 'sine');    
-        this.modulationIndex = new Tone.Gain(100); 
-        this.carrier = new Tone.Oscillator(440, 'sine'); 
+        this.modSpeed = new Tone.Oscillator(100, 'sine');    
+        this.modDepth = new Tone.Gain(100); 
+        this.carrier  = new Tone.Oscillator(440, 'sine'); 
         this.envelope = new Tone.AmplitudeEnvelope({
             attack: 0.01,
             decay: 0.2,
             sustain: 0.3,
-            release: 0.1
+            release: 0.1 
         });
         
-        this.modulator.connect(this.modulationIndex);
-        this.modulationIndex.connect(this.carrier.frequency); 
+        this.modSpeed.connect(this.modDepth);
+        this.modDepth.connect(this.carrier.frequency); 
         this.carrier.connect(this.envelope);
         this.envelope.toDestination();
         
@@ -30,7 +29,7 @@ export class FMSynth {
 
     private ensureStarted() {
         if (!this.started) {
-            this.modulator.start();
+            this.modSpeed.start();
             this.carrier.start();
             this.started = true;
         }
@@ -41,14 +40,18 @@ export class FMSynth {
         this.envelope.triggerAttackRelease(duration);
     }
 
-    setModulator(amount: number){
-        this.modulator.frequency.value = amount;
+    //changes speed of carrier frequency
+    setModSpeed(amount: number){
+        this.modSpeed.frequency.value = amount;
     }
     
-    setModulation(amount: number) {
-        this.modulationIndex.gain.value = amount;
+    //changes amount of carrier frequency
+    //was modulation
+    setModDepth(amount: number) {
+        this.modDepth.gain.value = amount;
     }
-    
+   
+    //carrier frequency
     setFrequency(freq: number) {
         this.carrier.frequency.value = freq;
     }
@@ -64,7 +67,7 @@ export class Grid {
     private numberOfColumns: number = 8;
     private buttons: HTMLButtonElement[] = [];
     private isOnStates: boolean[] = [];
-    private rate: number = 100; // milliseconds per step
+    private tempo: number = 100; // milliseconds per step
 
     constructor() {
         // Make sure this loop runs and creates synths
@@ -83,9 +86,9 @@ export class Grid {
         gridDiv.className = "grid";
 
         for (let i = 0; i < this.numberOfColumns; i++) {
-            this.synths[i].setModulation(modAmt);
+            this.synths[i].setModSpeed(modulatorAmt)
+            this.synths[i].setModDepth(modAmt);
             this.synths[i].setFrequency(freqAmt);
-            this.synths[i].setModulator(modulatorAmt)
             const button = document.createElement("button");
             this.buttons[i] = button;
             button.addEventListener("click", async () => {
@@ -106,24 +109,26 @@ export class Grid {
         const dialContainer = document.createElement("div");
         dialContainer.className = "dial-container";
         
-        const modAmountDial = this.createDial("Mod", modAmt, 0, 2000, (value) => {
-            this.setModulationAmt(value);
+        const modAmountDial = this.createDial("Speed", modAmt, 0, 2000, (value) => {
+            this.synths.forEach(synth => synth.setModSpeed(value));
         });
         const freqAmountDial = this.createDial("Freq", freqAmt, 1, 2000, (value) => {
-            this.setFrequencyAmt(value);
+            this.synths.forEach(synth => synth.setFrequency(value));
         });
-        const modulationAmountDial = this.createDial("Modulator", modulatorAmt, 0, 2000, (value) => {
-            this.setModulatorAmt(value);
+        const modulationAmountDial = this.createDial("Depth", modulatorAmt, 0, 2000, (value) => {
+            this.synths.forEach(synth => synth.setModDepth(value));
         });
+
+
         dialContainer.appendChild(modAmountDial);
         dialContainer.appendChild(freqAmountDial);
         dialContainer.appendChild(modulationAmountDial);
         gridDiv.appendChild(dialContainer);
-
         gridContainerDiv.appendChild(gridDiv);
     }
 
-    // Create circular dial/knob
+
+// Create circular dial/knob
 private createDial(labelText: string, initialValue: number, min: number, max: number, onChange: (value: number) => void): HTMLDivElement {
     const container = document.createElement("div");
     container.className = "knob-container";
@@ -186,28 +191,33 @@ private createDial(labelText: string, initialValue: number, min: number, max: nu
     
     return container;
 }
+/*
+    //update modulator speed for all instances in the row
+    setModSpeedAmt(amount: number) {
+        this.synths.forEach(synth => synth.setModSpeed(amount));
+    }
 
-    //update modulation amount for all instances in the row 
-    setModulationAmt(amount: number) {
-        this.synths.forEach(synth => synth.setModulation(amount));
+    //update mod depth for all instances in the row 
+    setModDepthAmt(amount: number) {
+        this.synths.forEach(synth => synth.setModDepth(amount));
     }
 
     //udpate frequency amount for all instances in the row
     setFrequencyAmt(amount: number) {
         this.synths.forEach(synth => synth.setFrequency(amount));
-    }
-
-    //update modulator amount for all instances in the row
-    setModulatorAmt(amount: number) {
-        this.synths.forEach(synth => synth.setModulator(amount));
+    } 
+*/
+    //update tempo
+    setTempo(newTempo: number) {
+        this.tempo = newTempo;
     }
 
     //listener for slider to adjust modularation amount in real-time
-    setModulationListener(sliderId: string) {
+    setModDepthListener(sliderId: string) {
         const slider = document.getElementById(sliderId) as HTMLInputElement;
         slider.addEventListener("input", () => {
             const modAmt = parseFloat(slider.value);
-            this.setModulationAmt(modAmt);
+            this.synths.forEach(synth => synth.setModDepth(modAmt));
             console.log(`Modulation amount set to ${modAmt}`);
         });
     }
@@ -216,25 +226,35 @@ private createDial(labelText: string, initialValue: number, min: number, max: nu
         const slider = document.getElementById(sliderId) as HTMLInputElement;
         slider.addEventListener("input", () => {
             const freqAmt = parseFloat(slider.value);
-            this.setFrequencyAmt(freqAmt);
+            this.synths.forEach(synth => synth.setFrequency(freqAmt));
             console.log(`Frequency amount set to ${freqAmt}`);
         });
     }
 
     //listener for slider to adjust modulator amount in real-time
-    setModulatorListener(sliderId: string) {
+    setModSpeedListener(sliderId: string) {
         const slider = document.getElementById(sliderId) as HTMLInputElement;
         slider.addEventListener("input", () => {
             const modulatorAmt = parseFloat(slider.value);
-            this.setModulatorAmt(modulatorAmt);
+            this.synths.forEach(synth => synth.setModSpeed(modulatorAmt));
             console.log(`Modulator amount set to ${modulatorAmt}`);
+        });
+    }
+    
+    //listener for adjusting tempo
+    setTempoListener(paramId: string){
+        const param = document.getElementById(paramId) as HTMLInputElement;
+        param.addEventListener("input", () => {
+            const newTempo = parseFloat(param.value)
+            this.setTempo(newTempo);
+            console.log(`Tempo set to ${newTempo}`);
         });
     }
 
     async playGrid() {
         let i = 0;
         while(true) {
-            await sleep(this.rate); 
+            await sleep(this.tempo); 
             
             // Highlight current column
             this.buttons.forEach((btn, idx) => {

@@ -19,17 +19,14 @@ const grid3 = new Grid();
 const grid4 = new Grid();
 
 //display 
-grid.displayGrid(500, 10, 100);
-grid2.displayGrid(500, 2200, 200);
-grid3.displayGrid(540, 200, 500);
-grid4.displayGrid(100, 100, 200);
+grid.displayGrid(100, 100, 100);
+grid2.displayGrid(100, 200, 200);
+grid3.displayGrid(140, 300, 500);
+grid4.displayGrid(100, 400, 200);
 
 
 grids.push(grid, grid2, grid3, grid4);
 grids.forEach(grid => grid.playGrid());
-
-document.querySelector<HTMLDivElement>('#app')!.insertAdjacentHTML('beforeend', `
-`)
 
 //Event listener for adding new grid
 const appDiv = document.getElementById("add-row") as HTMLDivElement;
